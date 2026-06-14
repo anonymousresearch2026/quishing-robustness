@@ -1,8 +1,8 @@
 # Quishing Robustness
 
-Code and benchmark for the study **"Evaluating the Robustness of Machine-Learning Quishing Detectors to Real-World QR-Code Distortions."**
+Code and benchmark for the study "Evaluating the Robustness of Machine-Learning Quishing Detectors to Real-World QR-Code Distortions."
 
-This repository reproduces two image-based QR-code phishing ("quishing") detectors — a classical gradient-boosted model (XGBoost) and a compact convolutional neural network (CNN) — and evaluates how their detection performance degrades when QR codes are subjected to realistic capture distortions (blur, rotation, salt-and-pepper noise, and JPEG compression). It also implements and evaluates a training-time data-augmentation defense.
+This repository reproduces two image-based QR-code phishing ("quishing") detectors; a classical gradient-boosted model (XGBoost) and a compact convolutional neural network (CNN). And it evaluates how their detection performance degrades when QR codes are subjected to realistic capture distortions (blur, rotation, salt-and-pepper noise, and JPEG compression). It also implements and evaluates a training-time data-augmentation defense.
 
 ## What the code does
 

@@ -2,56 +2,42 @@
 
 Code and benchmark for the study "Evaluating the Robustness of Machine-Learning Quishing Detectors to Real-World QR-Code Distortions."
 
-This repository reproduces two image-based QR-code phishing ("quishing") detectors; a classical gradient-boosted model (XGBoost) and a compact convolutional neural network (CNN). And it evaluates how their detection performance degrades when QR codes are subjected to realistic capture distortions (blur, rotation, salt-and-pepper noise, and JPEG compression). It also implements and evaluates a training-time data-augmentation defense.
+This repository reproduces two image-based QR-code phishing ("quishing") detectors — a classical gradient-boosted model (XGBoost) and a compact convolutional neural network (CNN) — and evaluates how their performance degrades when QR codes undergo realistic capture distortions (blur, rotation, salt-and-pepper noise, JPEG compression). It also evaluates a training-time data-augmentation defense, the effect of decision-threshold recalibration, and a real QR localization/rectification front-end placed ahead of the classifier.
 
 ## What the code does
 
-1. Loads a public dataset of 9,987 labelled 69×69 QR-code images.
-2. Creates a stratified 80/20 train/test split (fixed seed = 42).
+The original single-run pipeline is in `quishing_robustness.py`. The revised, consolidated pipeline used for the published results is in `quishing_robustness_v2.py`, which runs all experiments in one pass:
+
+1. Loads a public dataset of 9,987 labelled 69x69 QR-code images.
+2. Creates a stratified 80/20 train/test split (fixed split seed = 42).
 3. Trains the classical and CNN detectors on clean images.
-4. Applies parameterized distortions to the held-out test set, re-binarizing each distorted image (as a scanner would), and measures accuracy and AUC.
-5. Trains an augmentation-based defense and compares it against the baseline.
-6. Generates the figures used in the paper.
+4. Applies parameterized distortions to the held-out test set, re-binarizing each distorted image (as a scanner would), and reports accuracy at the fixed 0.5 threshold, accuracy at the best (recalibrated) threshold, and AUC.
+5. Trains and evaluates an augmentation-based defense.
+6. Trains the CNN across 5 random seeds and reports mean +/- standard deviation (the CNN is not deterministic on CPU).
+7. Evaluates a QR localization/rectification front-end (OpenCV): each code is rendered as a realistic image, distorted, then detected and rectified before classification, reporting detection rate and AUC with vs. without the front-end.
+8. Reports bootstrap 95% confidence intervals on key AUC comparisons.
 
 ## Dataset
 
-This repository does **not** redistribute the dataset. Download it (released under CC-BY-4.0) from the original authors:
+This repository does not redistribute the dataset. Download it (released under CC-BY-4.0) from the original authors: Trad, F., Chehab, A. "Detecting Quishing Attacks with Machine Learning Techniques Through QR Code Analysis." arXiv:2505.03451 — https://github.com/fouadtrad/Detecting-Quishing-Attacks-with-Machine-Learning-Techniques-Through-QR-Code-Analysis
 
-> Trad, F., Chehab, A. *Detecting Quishing Attacks with Machine Learning Techniques Through QR Code Analysis.* arXiv:2505.03451.
-> https://github.com/fouadtrad/Detecting-Quishing-Attacks-with-Machine-Learning-Techniques-Through-QR-Code-Analysis
-
-Unzip `QuishingDataset.zip` and place the two files
-
-```
-qr_codes_29.pickle
-qr_codes_29_labels.pickle
-```
-
-into a folder named `data/` in this repository (or edit `DATA_DIR` at the top of `quishing_robustness.py`).
+Place the two files (qr_codes_29.pickle and qr_codes_29_labels.pickle) into a folder named data/ at the repository root, or edit the DATA_DIR variable at the top of the script.
 
 ## Requirements
 
-```
-pip install -r requirements.txt
-```
+Install dependencies with: pip install -r requirements.txt
+
+The rectification experiment additionally requires opencv-python.
 
 ## Running
 
-```
-python quishing_robustness.py
-```
+Run the full pipeline with: python quishing_robustness_v2.py
 
-This prints the clean-image baselines and the degradation tables for each distortion, trains the augmentation defense, and saves three figures:
-
-- `fig_distortion_examples.png`
-- `fig_severity_sweep.png`
-- `fig_distortion_types.png`
-
-All experiments run on CPU; no GPU is required.
+This prints, in order: (A) classical results, (B) augmentation results, (C) multi-seed CNN mean +/- SD, (D) rectification / decode front-end results, and (E) bootstrap confidence intervals. All experiments run on CPU; no GPU is required. The full run takes roughly 30 minutes.
 
 ## Reproducibility
 
-A fixed random seed (42) is used throughout (data split, model training, noise, and augmentation), so results are deterministic across runs on the same environment.
+The data split, classical model, augmentation, and noise are deterministic (fixed seed = 42) and reproduce exactly across runs. The CNN is not deterministic on CPU, even with a fixed seed; we therefore train it across 5 seeds and report mean +/- SD rather than a single run. Individual CNN values vary modestly from run to run, but the reported pattern is stable.
 
 ## License
 

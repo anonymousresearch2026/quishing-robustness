@@ -5,3 +5,4 @@ xgboost
 tensorflow
 pillow
 matplotlib
+opencv-python
